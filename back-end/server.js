@@ -7,8 +7,8 @@ import itemRoute from './routes/itemRoutes.js';
 const app = express();
 
 app.use(express.json())
-   .use('/user', userRoute)
-   .use('/api/items', itemRoute);
+   app.use('/user', userRoute)
+   app.use('/api/items', itemRoute);
 
 app.get("/", (req, res) => res.send("Server Started"));
 
@@ -16,4 +16,4 @@ mongoose.connect(process.env.MONGO_URI)
     .then(() => {
         app.listen(5000, () => console.log("DB Connected And Server Started."));
     })
-    .catch(console.log);
+    .catch((err) => console.error('Error connecting to MongoDB:', err));
