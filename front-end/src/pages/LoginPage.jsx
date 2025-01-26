@@ -1,101 +1,93 @@
 import React, { useState } from "react";
-import { FaGoogle, FaFacebook, FaInstagram } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { login } from "../api";
+import { Form, Input, Button, Card, notification } from "antd";
 
-const LoginPage = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+const Login = () => {
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!email || !password) {
-      alert("Please fill in both fields.");
-      return;
+  const handleSubmit = async (values) => {
+    setLoading(true);
+    try {
+      const res = await login(values);
+      if (res.data.success) {
+        localStorage.setItem("token", res.data.token);
+        notification.success({
+          message: "Login Successful!",
+          description: "Welcome to the Dashboard",
+        });
+        navigate("/dashboard");
+      } else {
+        notification.error({
+          message: "Login Failed",
+          description: res.data.message,
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      notification.error({
+        message: "Error",
+        description: "Something went wrong. Please try again.",
+      });
+    } finally {
+      setLoading(false);
     }
-    alert(`Logged in with Email: ${email}`);
-    // Add your login logic here (e.g., API call)
-  };
-
-  const handleSocialLogin = (platform) => {
-    alert(`Login with ${platform} clicked!`);
-    // Add social login logic here
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white shadow-lg rounded-lg">
-        <h1 className="text-2xl font-bold text-center">Login</h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-600"
-            >
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="block w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-600"
-            >
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="block w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <Card className="w-full max-w-md shadow-lg rounded-lg">
+        <h1 className="text-2xl font-semibold text-center mb-6">Login</h1>
+        <Form
+          layout="vertical"
+          onFinish={handleSubmit}
+          className="space-y-4"
+          autoComplete="off"
+        >
+          <Form.Item
+            label="Email"
+            name="email"
+            rules={[
+              { required: true, message: "Please enter your email" },
+              { type: "email", message: "Please enter a valid email" },
+            ]}
           >
-            Login
-          </button>
-        </form>
-        <div className="text-sm text-center text-gray-600">
-          Don’t have an account?{" "}
-          <a href="/signup" className="text-blue-500 hover:underline">
-            Sign Up
+            <Input placeholder="Enter your email" />
+          </Form.Item>
+          <Form.Item
+            label="Password"
+            name="password"
+            rules={[
+              { required: true, message: "Please enter your password" },
+              { min: 6, message: "Password must be at least 6 characters long" },
+            ]}
+          >
+            <Input.Password placeholder="Enter your password" />
+          </Form.Item>
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              className="w-full"
+              loading={loading}
+            >
+              Login
+            </Button>
+          </Form.Item>
+        </Form>
+        <div className="text-center mt-4">
+          <span>Don't have an account? </span>
+          <a
+            className="text-blue-500 hover:underline"
+            onClick={() => navigate("/signup")}
+          >
+            Signup here
           </a>
         </div>
-        <div className="space-y-2">
-          <button
-            onClick={() => handleSocialLogin("Google")}
-            className="flex items-center justify-center w-full px-4 py-2 text-white bg-red-500 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
-          >
-            <FaGoogle className="mr-2" />
-            Login with Google
-          </button>
-          <button
-            onClick={() => handleSocialLogin("Facebook")}
-            className="flex items-center justify-center w-full px-4 py-2 text-white bg-blue-800 rounded hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
-          >
-            <FaFacebook className="mr-2" />
-            Login with Facebook
-          </button>
-          <button
-            onClick={() => handleSocialLogin("Instagram")}
-            className="flex items-center justify-center w-full px-4 py-2 text-white bg-pink-500 rounded hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-400"
-          >
-            <FaInstagram className="mr-2" />
-            Login with Instagram
-          </button>
-        </div>
-      </div>
+      </Card>
     </div>
   );
 };
 
-export default LoginPage;
+export default Login;
